@@ -2,7 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  assetPrefix : "."
+  assetPrefix : ".",
+  async rewrites() {
+    return [
+      {
+        source: '/binance-api/:path*',
+        destination: 'https://api.binance.com/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = {

@@ -33,7 +33,7 @@ export function middleware(request: NextRequest) {
   }
 
   if ((url.pathname === "/dashboard" || url.pathname === "/dashboard") && (roleId === "1" || roleId === "")) {
-    url.pathname = "/dashboard/markets";
+    url.pathname = "/dashboard/user-view";
     return NextResponse.redirect(url);
   }
 
