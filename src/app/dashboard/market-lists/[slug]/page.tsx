@@ -73,8 +73,8 @@ export default function CoinDetailPage() {
   /* ---------- loading skeleton (tidak ada hook setelah ini) ---------- */
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col justify-between">
-        <div className="max-w-6xl mx-auto w-full p-6 space-y-6">
+      <div className="min-h-screen bg-white flex flex-col">
+        <div className="max-w-6xl mx-auto w-full p-6 space-y-6 pb-24">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Skeleton className="h-10 w-10 rounded-full" />
@@ -129,107 +129,111 @@ export default function CoinDetailPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Toaster />
 
-      {/* header */}
-      <div className="max-w-6xl mx-auto w-full p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src={crypto.logoUrl} alt={crypto.name} width={48} height={48} className="rounded-full" />
-            <div>
-              <p className="text-xl font-bold">{crypto.symbol}/USDT</p>
-              <p className="text-sm text-gray-500">{crypto.name}</p>
+      {/* Main content dengan padding bottom untuk BottomNavigation */}
+      <div className="flex-1 pb-24">
+        {/* header */}
+        <div className="max-w-6xl mx-auto w-full p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Image src={crypto.logoUrl} alt={crypto.name} width={48} height={48} className="rounded-full" />
+              <div>
+                <p className="text-xl font-bold">{crypto.symbol}/USDT</p>
+                <p className="text-sm text-gray-500">{crypto.name}</p>
+              </div>
             </div>
+            <Button variant="ghost" size="icon" onClick={fetchCrypto}>
+              <RefreshCw className="h-5 w-5" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={fetchCrypto}>
-            <RefreshCw className="h-5 w-5" />
-          </Button>
-        </div>
 
-        {/* harga utama */}
-        <div>
-          <p className="text-3xl font-extrabold text-blue-900">{formatIDR(p.price)}</p>
-          <p className={`flex items-center gap-1 text-sm ${pctColor(pc24)}`}>
-            {pc24 >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            {pc24 >= 0 ? "+" : ""}
-            {pc24.toFixed(2)}% (24 jam)
-          </p>
-        </div>
-
-        {/* grid data */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="p-4 border rounded-lg">
-            <p className="text-gray-500 text-xs">24h Low</p>
-            <p className="font-semibold">{formatIDR((p as any).low_24h ?? p.price * 0.95)}</p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <p className="text-gray-500 text-xs">24h High</p>
-            <p className="font-semibold">{formatIDR((p as any).high_24h ?? p.price * 1.05)}</p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <p className="text-gray-500 text-xs">Market Cap</p>
-            <p className="font-semibold">{formatIDR(p.market_cap)}</p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <p className="text-gray-500 text-xs">Circulating Supply</p>
-            <p className="font-semibold">
-              {crypto.circulating_supply.toLocaleString("id-ID")} {crypto.symbol}
+          {/* harga utama */}
+          <div>
+            <p className="text-3xl font-extrabold text-blue-900">{formatIDR(p.price)}</p>
+            <p className={`flex items-center gap-1 text-sm ${pctColor(pc24)}`}>
+              {pc24 >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+              {pc24 >= 0 ? "+" : ""}
+              {pc24.toFixed(2)}% (24 jam)
             </p>
           </div>
+
+          {/* grid data */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div className="p-4 border rounded-lg">
+              <p className="text-gray-500 text-xs">24h Low</p>
+              <p className="font-semibold">{formatIDR((p as any).low_24h ?? p.price * 0.95)}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <p className="text-gray-500 text-xs">24h High</p>
+              <p className="font-semibold">{formatIDR((p as any).high_24h ?? p.price * 1.05)}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <p className="text-gray-500 text-xs">Market Cap</p>
+              <p className="font-semibold">{formatIDR(p.market_cap)}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <p className="text-gray-500 text-xs">Circulating Supply</p>
+              <p className="font-semibold">
+                {crypto.circulating_supply.toLocaleString("id-ID")} {crypto.symbol}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* chart */}
+        <div className="max-w-6xl mx-auto w-full px-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performa {crypto.symbol}</CardTitle>
+              <CardDescription>Perubahan harga 24 jam - 90 hari</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ChartContainer config={chartConfig} className="h-full w-full">
+                <AreaChart data={chartData} margin={{ top: 0, left: 0, right: 0 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="time"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(v) => (v as string).slice(0, 3)}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickCount={5}
+                    padding={{ top: 20 }}
+                    tickFormatter={(value) => Number(value).toFixed(2)}
+                  />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                  <Area dataKey="desktop" type="monotone" fill="#3861fb" fillOpacity={0.2} stroke="#3861fb" />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+            <CardFooter>
+              <div className="text-sm font-semibold flex items-center gap-2">
+                {pc30 >= 0 ? (
+                  <>
+                    Naik {pc30.toFixed(2)}% bulan ini
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                  </>
+                ) : (
+                  <>
+                    Turun {Math.abs(pc30).toFixed(2)}% bulan ini
+                    <TrendingDown className="h-4 w-4 text-red-500" />
+                  </>
+                )}
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        {/* tombol beli dengan margin bottom ekstra */}
+        <div className="max-w-6xl mx-auto w-full px-6 py-8 flex justify-center mb-8">
+          <BuyCoin {...crypto} />
         </div>
       </div>
 
-      {/* chart */}
-      <div className="max-w-6xl mx-auto w-full px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Performa {crypto.symbol}</CardTitle>
-            <CardDescription>Perubahan harga 24 jam - 90 hari</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ChartContainer config={chartConfig} className="h-full w-full">
-              <AreaChart data={chartData} margin={{ top: 0, left: 0, right: 0 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="time"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(v) => (v as string).slice(0, 3)}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickCount={5}
-                  padding={{ top: 20 }}
-                  tickFormatter={(value) => Number(value).toFixed(2)}
-                />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                <Area dataKey="desktop" type="monotone" fill="#3861fb" fillOpacity={0.2} stroke="#3861fb" />
-              </AreaChart>
-            </ChartContainer>
-          </CardContent>
-          <CardFooter>
-            <div className="text-sm font-semibold flex items-center gap-2">
-              {pc30 >= 0 ? (
-                <>
-                  Naik {pc30.toFixed(2)}% bulan ini
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                </>
-              ) : (
-                <>
-                  Turun {Math.abs(pc30).toFixed(2)}% bulan ini
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                </>
-              )}
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
-
-      {/* tombol beli */}
-      <div className="max-w-6xl mx-auto w-full px-6 py-8 flex justify-center">
-        <BuyCoin {...crypto} />
-      </div>
-
+      {/* BottomNavigation - akan fixed di bawah */}
       <BottomNavigation />
     </div>
   );
