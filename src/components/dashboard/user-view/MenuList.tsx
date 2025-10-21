@@ -22,15 +22,9 @@ export function MenuList() {
   const menuItems: MenuItem[] = [
     {
       id: "withdraw-history",
-      title: "Catatan Penarikan",
+      title: "Catatan Penarikan dan Isi Ulang",
       icon: <Download className="w-5 h-5" />,
-      onClick: () => router.push("/dashboard/transactions?type=withdraw"),
-    },
-    {
-      id: "deposit-history",
-      title: "Catatan Isi Ulang",
-      icon: <Upload className="w-5 h-5" />,
-      onClick: () => router.push("/dashboard/transactions?type=deposit"),
+      onClick: () => router.push("/dashboard/transactions-user?type=withdraw"),
     },
     {
       id: "payment-methods",

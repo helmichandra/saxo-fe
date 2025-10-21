@@ -65,12 +65,13 @@ export default function UserViewPage() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data.data);
         setWalletData({
-          balance: data.balance || 0,
-          userId: data.userId || "N/A",
-          fullName: fullName || data.fullName || "User",
-          creditScore: data.creditScore || 100,
-          vipLevel: data.vipLevel || 1,
+          balance: data.data.balance || 0,
+          userId: data.data.userId || "N/A",
+          fullName: fullName || data.data.fullName || "User",
+          creditScore: data.data.creditScore || 100,
+          vipLevel: data.data.vipLevel || 1,
         });
       } else {
         // Set default data jika API gagal

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -12,7 +13,10 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
-import { BottomNavigation } from "@/components/dashboard/user-view/BottomNavigation";
+import { BottomNavigation } from '@/components/dashboard/user-view/BottomNavigation';
+import { sessionId } from '@/lib/getSession';
+import { useToast } from '@/hooks/use-toast';
+import { logout } from '@/lib/auth';
 
 // Extend Window interface untuk TradingView
 declare global {
@@ -22,21 +26,27 @@ declare global {
 }
 
 interface CryptoPrice {
-  price: string;
-  change: string;
-  changePercent: number;
+  price: string;         // formatted string e.g. "109,446.00" (USD)
+  change: string;        // e.g. "+1.35%"
+  changePercent: number; // e.g. 1.35
   high: string;
   low: string;
-  volume: string;
+  volume: string;        // e.g. "59.28M"
 }
 
 export default function TradingViewChart() {
+  const { toast } = useToast();
+  const router = useRouter();
+
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
   const [selectedSymbol, setSelectedSymbol] = useState('BINANCE:BTCUSDT');
   const [selectedInterval, setSelectedInterval] = useState('15');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [coinAmount, setCoinAmount] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
+
   const [priceData, setPriceData] = useState<CryptoPrice>({
     price: '0',
     change: '0%',
@@ -65,56 +75,48 @@ export default function TradingViewChart() {
     { value: 'D', label: '1D' },
   ];
 
-  // Fetch live data from CoinGecko API
+  // ==== Data harga (CoinGecko, USD) ====
   const fetchPriceData = async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
-
       const currentPair = cryptoPairs.find((p) => p.value === selectedSymbol);
       if (!currentPair) return;
 
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/${currentPair.coinId}?localization=false&tickers=true&market_data=true&community_data=false&developer_data=false&sparkline=false`
       );
-
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       const data = await res.json();
-      const marketData = data.market_data;
-      const price = marketData.current_price.usd;
-      const changePercent = marketData.price_change_percentage_24h;
-      const high = marketData.high_24h.usd;
-      const low = marketData.low_24h.usd;
-      const volume = marketData.total_volume.usd;
-
-      const formattedChange =
-        changePercent >= 0
-          ? `+${changePercent.toFixed(2)}%`
-          : `${changePercent.toFixed(2)}%`;
+      const m = data.market_data;
+      const price = m.current_price.usd;
+      const changePercent = m.price_change_percentage_24h;
+      const high = m.high_24h.usd;
+      const low = m.low_24h.usd;
+      const volume = m.total_volume.usd;
 
       setPriceData({
         price: price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        change: formattedChange,
-        changePercent: changePercent,
+        change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
+        changePercent,
         high: high.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         low: low.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        volume: (volume / 1000000).toFixed(2) + 'M',
+        volume: (volume / 1_000_000).toFixed(2) + 'M',
       });
-    } catch (error) {
-      console.error('Error fetching price data:', error);
+    } catch (e) {
+      console.error('Error fetching price data:', e);
     } finally {
       setRefreshing(false);
     }
   };
 
-  // Fetch data on mount and symbol change
   useEffect(() => {
     fetchPriceData();
     const interval = setInterval(() => fetchPriceData(), 30000);
     return () => clearInterval(interval);
   }, [selectedSymbol]);
 
-  // Load TradingView script
+  // ==== TradingView Chart ====
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/tv.js';
@@ -123,27 +125,22 @@ export default function TradingViewChart() {
     document.body.appendChild(script);
 
     return () => {
-      if (widgetRef.current) {
-        widgetRef.current.remove();
-      }
+      if (widgetRef.current) widgetRef.current.remove();
     };
   }, []);
 
   useEffect(() => {
-    if (window.TradingView && chartContainerRef.current) {
+    if (typeof window !== 'undefined' && window.TradingView && chartContainerRef.current) {
       initWidget();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSymbol, selectedInterval]);
 
   const initWidget = () => {
     if (!chartContainerRef.current || !window.TradingView) return;
 
     setIsLoading(true);
-
-    if (widgetRef.current) {
-      widgetRef.current.remove();
-    }
-
+    if (widgetRef.current) widgetRef.current.remove();
     chartContainerRef.current.innerHTML = '';
 
     try {
@@ -173,18 +170,115 @@ export default function TradingViewChart() {
       });
 
       setTimeout(() => setIsLoading(false), 1000);
-    } catch (error) {
-      console.error('Error initializing TradingView widget:', error);
+    } catch (e) {
+      console.error('Error initializing TradingView widget:', e);
       setIsLoading(false);
     }
   };
 
-  const getCurrentPairName = () => {
+  const getCurrentPair = () => {
     const pair = cryptoPairs.find((p) => p.value === selectedSymbol);
-    return pair ? pair.label : 'BTC/USDT';
+    if (!pair) throw new Error('Pair tidak ditemukan');
+    return pair;
   };
 
+  const getCurrentPairName = () => getCurrentPair().label;
   const isPositive = priceData.changePercent >= 0;
+  const priceNumber = parseFloat(priceData.price.replace(/,/g, '')) || 0;
+
+  const openBuyModal = () => {
+    const p = getCurrentPair();
+    const params = new URLSearchParams({
+      symbol: p.symbol,
+      price: String(priceNumber),      // optional: biar modal bisa prefill
+      pair: p.label,                   // optional
+    }).toString();
+
+    router.push(`/dashboard/markets/${p.coinId}/buyCoin?${params}`, { scroll: false });
+  };
+
+  const openSellModal = () => {
+    const p = getCurrentPair();
+    const params = new URLSearchParams({
+      symbol: p.symbol,
+      price: String(priceNumber),      // optional
+      pair: p.label,
+    }).toString();
+
+    router.push(`/dashboard/markets/${p.coinId}/sellCoin?${params}`, { scroll: false });
+  };
+
+
+  const handleSell = async () => {
+    if (coinAmount <= 0) {
+      toast({
+        title: 'Error',
+        description: 'Jumlah koin tidak valid.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!sessionId) {
+      toast({
+        title: 'Error',
+        description: 'Session tidak ditemukan. Silakan login kembali.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const currentPair = getCurrentPair();
+
+      const body = {
+        tradeType: 'SELL',
+        coinId: currentPair.coinId,
+        coinCode: currentPair.symbol,
+        coinNominalExchange: coinAmount,
+        // TODO: jika backend butuh IDR, ganti kalkulasi ke rate IDR
+        fiatCurrentcyCheckoutTime: priceNumber * coinAmount,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trade/commit-exchange`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          authorization: `${sessionId}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.status === 401) {
+        console.warn('Unauthorized. Redirecting...');
+        logout();
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to sell coin.');
+      }
+
+      toast({
+        title: 'Berhasil menjual koin',
+        description: `Anda berhasil menjual ${coinAmount} ${currentPair.symbol}.`,
+      });
+      setCoinAmount(0);
+      location.reload();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Gagal menjual koin: ${error}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden pb-16">
@@ -195,9 +289,7 @@ export default function TradingViewChart() {
             <h1 className="text-2xl font-bold tracking-tight">
               {getCurrentPairName()}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Grafik Trading Real-time
-            </p>
+            <p className="text-sm text-muted-foreground">Grafik Trading Real-time</p>
           </div>
           <Button
             variant="outline"
@@ -205,9 +297,7 @@ export default function TradingViewChart() {
             onClick={() => fetchPriceData(true)}
             disabled={refreshing}
           >
-            <RefreshCw
-              className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 
@@ -223,11 +313,7 @@ export default function TradingViewChart() {
                 className="text-sm px-2 py-1"
               >
                 <span className="flex items-center gap-1">
-                  {isPositive ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
+                  {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   {priceData.change}
                 </span>
               </Badge>
@@ -249,30 +335,22 @@ export default function TradingViewChart() {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">24h Low</p>
-              <p className="font-mono font-semibold text-sm">
-                {priceData.low}
-              </p>
+              <p className="font-mono font-semibold text-sm">{priceData.low}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">24h High</p>
-              <p className="font-mono font-semibold text-sm">
-                {priceData.high}
-              </p>
+              <p className="font-mono font-semibold text-sm">{priceData.high}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">24h Volume</p>
-              <p className="font-mono font-semibold text-sm">
-                {priceData.volume}
-              </p>
+              <p className="font-mono font-semibold text-sm">{priceData.volume}</p>
             </div>
           </div>
         </Card>
 
         {/* Time Intervals */}
         <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
-          <span className="text-xs text-muted-foreground whitespace-nowrap mr-2">
-            Interval:
-          </span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap mr-2">Interval:</span>
           {timeIntervals.map((interval) => (
             <Button
               key={interval.value}
@@ -296,36 +374,44 @@ export default function TradingViewChart() {
               </div>
             </div>
           )}
-          <div
-            id="tradingview_chart"
-            ref={chartContainerRef}
-            className="w-full h-full"
-          />
+          <div id="tradingview_chart" ref={chartContainerRef} className="w-full h-full" />
         </Card>
+
+        {/* Input jumlah coin */}
+        <div className="flex items-center gap-2 mt-4">
+          <input
+            type="number"
+            className="border rounded px-3 py-2 w-full text-right"
+            placeholder="Jumlah koin"
+            value={Number.isFinite(coinAmount) ? coinAmount : 0}
+            onChange={(e) => setCoinAmount(parseFloat(e.target.value) || 0)}
+            min={0}
+            step="any"
+          />
+        </div>
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <Button
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-            onClick={() => alert('Beli Naik')}
+            onClick={openBuyModal}
           >
             <TrendingUp className="w-5 h-5 mr-2" />
-            Beli Naik
+            Beli
           </Button>
           <Button
             size="lg"
             variant="destructive"
             className="font-semibold"
-            onClick={() => alert('Beli Turun')}
+            onClick={openSellModal}
           >
             <TrendingDown className="w-5 h-5 mr-2" />
-            Beli Turun
+            Jual
           </Button>
         </div>
       </div>
 
-      {/* Bottom Navigation */}
       <BottomNavigation />
     </div>
   );

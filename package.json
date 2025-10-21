@@ -24,16 +24,17 @@
     "cmdk": "^1.0.0",
     "lucide-react": "^0.454.0",
     "next": "15.0.2",
-    "react": "19.2.0",           
-    "react-dom": "19.2.0",         
-    "recharts": "^2.15.4",        
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "recharts": "^2.15.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^19",        
-    "@types/react-dom": "^19",    
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "eslint": "^8",
     "eslint-config-next": "15.0.2",
     "postcss": "^8",
@@ -41,7 +42,7 @@
     "typescript": "^5"
   },
   "overrides": {
-    "react": "19.2.0",             
+    "react": "19.2.0",
     "react-dom": "19.2.0"
   }
 }
