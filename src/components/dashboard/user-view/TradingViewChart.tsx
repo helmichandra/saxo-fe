@@ -234,6 +234,7 @@ export default function TradingViewChart() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          dev_chronome: "yes",
           authorization: `${sessionId}`,
         },
         body: JSON.stringify(body),
