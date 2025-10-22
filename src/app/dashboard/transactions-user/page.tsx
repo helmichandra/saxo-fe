@@ -7,6 +7,7 @@ import WalletTable from "@/components/dashboard/user-view/transactions/walletTab
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowDownToLine, ArrowUpFromLine, Coins } from "lucide-react";
+import { BottomNavigation } from "@/components/dashboard/user-view/BottomNavigation";
 
 function TransactionsContent() {
   const searchParams = useSearchParams();
@@ -74,6 +75,8 @@ export default function TransactionsPage() {
       }
     >
       <TransactionsContent />
+      <BottomNavigation />
+
     </Suspense>
   );
 }
