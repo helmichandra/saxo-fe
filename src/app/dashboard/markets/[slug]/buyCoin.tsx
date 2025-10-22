@@ -100,6 +100,9 @@ const BuyCoin = ( crypto : CryptocurrencyData) => {
       });
 
       const data = await response.json();
+      console.log(data);
+      console.log(response);
+
 
       if (!response.ok) {
         toast({

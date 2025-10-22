@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { TrendingUp, TrendingDown, RefreshCw, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, X, Clock } from 'lucide-react';
 import { BottomNavigation } from '@/components/dashboard/user-view/BottomNavigation';
 import { sessionId } from '@/lib/getSession';
 import { useToast } from '@/hooks/use-toast';
@@ -46,6 +46,8 @@ export default function TradingViewChart() {
 
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const [selectedSymbol, setSelectedSymbol] = useState('BINANCE:BTCUSDT');
   const [selectedInterval, setSelectedInterval] = useState('15');
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +59,11 @@ export default function TradingViewChart() {
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<number>(60);
   const [orderAmount, setOrderAmount] = useState<number>(0);
+  
+  // Countdown states
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [orderPrice, setOrderPrice] = useState<number>(0);
 
   const [priceData, setPriceData] = useState<CryptoPrice>({
     price: '0',
@@ -68,12 +75,12 @@ export default function TradingViewChart() {
   });
 
   const cryptoPairs = [
-    { value: 'BINANCE:BTCUSDT', label: 'BTC/USDT', symbol: 'BTCUSDT', coinId: 'bitcoin' },
-    { value: 'BINANCE:ETHUSDT', label: 'ETH/USDT', symbol: 'ETHUSDT', coinId: 'ethereum' },
-    { value: 'BINANCE:BNBUSDT', label: 'BNB/USDT', symbol: 'BNBUSDT', coinId: 'binancecoin' },
-    { value: 'BINANCE:SOLUSDT', label: 'SOL/USDT', symbol: 'SOLUSDT', coinId: 'solana' },
-    { value: 'BINANCE:XRPUSDT', label: 'XRP/USDT', symbol: 'XRPUSDT', coinId: 'ripple' },
-    { value: 'BINANCE:ADAUSDT', label: 'ADA/USDT', symbol: 'ADAUSDT', coinId: 'cardano' },
+    { value: 'BINANCE:BTCUSDT', label: 'BTC/USDT', symbol: 'BTCUSDT', coinId: 'bitcoin', id: 1 },
+    { value: 'BINANCE:ETHUSDT', label: 'ETH/USDT', symbol: 'ETHUSDT', coinId: 'ethereum', id: 2 },
+    { value: 'BINANCE:BNBUSDT', label: 'BNB/USDT', symbol: 'BNBUSDT', coinId: 'binancecoin', id: 3 },
+    { value: 'BINANCE:SOLUSDT', label: 'SOL/USDT', symbol: 'SOLUSDT', coinId: 'solana', id: 4 },
+    { value: 'BINANCE:XRPUSDT', label: 'XRP/USDT', symbol: 'XRPUSDT', coinId: 'ripple', id: 5 },
+    { value: 'BINANCE:ADAUSDT', label: 'ADA/USDT', symbol: 'ADAUSDT', coinId: 'cardano', id: 6 },
   ];
 
   const timeIntervals = [
@@ -143,6 +150,7 @@ export default function TradingViewChart() {
 
     return () => {
       if (widgetRef.current) widgetRef.current.remove();
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, []);
 
@@ -216,25 +224,22 @@ export default function TradingViewChart() {
     setIsBuyModalOpen(true);
   };
 
-  const handleConfirmBuy = async () => {
-    setLoading(true);
+  const executeTrade = async (currentPair: any, amount: number, price: number) => {
     try {
-      const currentPair = getCurrentPair();
-
       const body = {
         tradeType: 'BUY',
-        coinId: currentPair.coinId,
-        coinCode: currentPair.symbol,
-        coinNominalExchange: orderAmount,
-        fiatCurrentcyCheckoutTime: priceNumber * orderAmount,
-        duration: selectedDuration, // Jika backend memerlukan duration
+        coinId: currentPair.id,
+        coinCode: currentPair.symbol.replace('USDT', ''),
+        coinNominalExchange: amount,
+        fiatCurrentcyCheckoutTime: price * amount,
       };
+
+      console.log('Executing trade with payload:', body);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trade/commit-exchange`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          dev_chronome: "yes",
           authorization: `${sessionId}`,
         },
         body: JSON.stringify(body),
@@ -243,7 +248,6 @@ export default function TradingViewChart() {
       if (response.status === 401) {
         console.warn('Unauthorized. Redirecting...');
         logout();
-        setLoading(false);
         return;
       }
 
@@ -254,40 +258,95 @@ export default function TradingViewChart() {
       }
 
       // Show success popup
+      const totalAmount = price * amount;
       toast({
         title: '✅ Pembelian Berhasil',
-        description: `+${(priceNumber * orderAmount).toLocaleString('id-ID')} IDR`,
+        description: `+${totalAmount.toLocaleString('id-ID', { minimumFractionDigits: 2 })} USD`,
         className: 'bg-green-600 text-white',
       });
 
-      setIsBuyModalOpen(false);
+      // Reset states
+      setIsCountdownActive(false);
+      setRemainingTime(0);
       setCoinAmount(0);
       
-      // Reload or update balance
+      // Reload after delay
       setTimeout(() => {
         location.reload();
       }, 1500);
     } catch (error) {
+      console.error('Trade execution error:', error);
       toast({
         title: 'Error',
         description: `Gagal membeli koin: ${error}`,
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
+      setIsCountdownActive(false);
+      setRemainingTime(0);
     }
   };
 
-  const openSellModal = () => {
-    const p = getCurrentPair();
-    const params = new URLSearchParams({
-      symbol: p.symbol,
-      price: String(priceNumber),
-      pair: p.label,
-    }).toString();
+  const startCountdown = () => {
+    if (orderAmount <= 0) {
+      toast({
+        title: 'Error',
+        description: 'Jumlah pesanan harus lebih dari 0',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    router.push(`/dashboard/markets/${p.coinId}/sellCoin?${params}`, { scroll: false });
+    const currentPair = getCurrentPair();
+    const currentPrice = priceNumber;
+
+    setOrderPrice(currentPrice);
+    setRemainingTime(selectedDuration);
+    setIsCountdownActive(true);
+    setIsBuyModalOpen(false);
+
+    toast({
+      title: 'Order Dimulai',
+      description: `Pesanan akan dieksekusi dalam ${selectedDuration} detik`,
+    });
+
+    let timeLeft = selectedDuration;
+
+    countdownIntervalRef.current = setInterval(() => {
+      timeLeft -= 1;
+      setRemainingTime(timeLeft);
+
+      if (timeLeft <= 0) {
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+        }
+        executeTrade(currentPair, orderAmount, currentPrice);
+      }
+    }, 1000);
   };
+
+  // Prevent page unload during countdown
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isCountdownActive) {
+        e.preventDefault();
+        e.returnValue = 'Order sedang berjalan. Jangan refresh atau pindah halaman!';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isCountdownActive]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden pb-16">
@@ -309,6 +368,30 @@ export default function TradingViewChart() {
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
+
+        {/* Countdown Alert */}
+        {isCountdownActive && (
+          <Card className="p-4 mb-4 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
+                <div>
+                  <p className="font-semibold text-blue-900">Order Aktif</p>
+                  <p className="text-sm text-blue-700">
+                    {orderAmount} {getCurrentPair().symbol.replace('USDT', '')} @ ${orderPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-red-600 font-medium mt-1">
+                    ⚠️ Jangan refresh atau pindah halaman!
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-blue-600">{formatTime(remainingTime)}</p>
+                <p className="text-xs text-blue-700">tersisa</p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Price Info Card */}
         <Card className="p-4 mb-4">
@@ -396,6 +479,7 @@ export default function TradingViewChart() {
             onChange={(e) => setCoinAmount(parseFloat(e.target.value) || 0)}
             min={0}
             step="any"
+            disabled={isCountdownActive}
           />
         </div>
 
@@ -405,18 +489,20 @@ export default function TradingViewChart() {
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white font-semibold"
             onClick={openBuyModal}
+            disabled={isCountdownActive}
           >
             <TrendingUp className="w-5 h-5 mr-2" />
-            Beli
+            Beli Naik
           </Button>
           <Button
             size="lg"
             variant="destructive"
             className="font-semibold"
-            onClick={openSellModal}
+            onClick={openBuyModal}
+            disabled={isCountdownActive}
           >
             <TrendingDown className="w-5 h-5 mr-2" />
-            Jual
+            Beli Turun
           </Button>
         </div>
       </div>
@@ -476,22 +562,27 @@ export default function TradingViewChart() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Total Saldo:</span>
                 <span className="font-semibold">
-                  {(priceNumber * orderAmount).toLocaleString('id-ID', {
+                  {(priceNumber * orderAmount).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}{' '}
-                  IDR
+                  USD
                 </span>
               </div>
             </div>
 
+            {/* Info Text */}
+            <p className="text-xs text-gray-500 text-center">
+              Order akan dieksekusi otomatis setelah waktu yang dipilih
+            </p>
+
             {/* Confirm Button */}
             <Button
-              onClick={handleConfirmBuy}
-              disabled={loading || orderAmount <= 0}
+              onClick={startCountdown}
+              disabled={orderAmount <= 0}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-base"
             >
-              {loading ? 'Memproses...' : 'Konfirmasi pemesanan'}
+              Mulai Order
             </Button>
           </div>
         </DialogContent>
