@@ -56,6 +56,12 @@ const ViewUser = (user: User) => {
                 {user.isActive ? "Active" : "Inactive"}
               </p>
             </div>
+            <div className="flex flex-row justify-between gap-1 py-3">
+              <span className="font-medium">Kredit Skor:</span>
+              <p>                
+                {user.creditScore}
+              </p>
+            </div>
             <div className="border border-gray my-3"></div>
             {user.adminNotes != "" && user.adminNotes != null && (
               <div className="flex flex-col bg-gray-100 rounded-lg justify-between gap-1 py-3 px-3">

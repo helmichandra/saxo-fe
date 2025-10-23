@@ -30,6 +30,7 @@ const EditUser = (user: User) => {
   const [fullName, setFullName] = useState(user.fullName || "");
   const [email, setEmail] = useState(user.email || "");
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "");
+  const [creditScore, setCreditScore] = useState(user.creditScore || "");
   const [isActive, setIsActive] = useState<number>(user.isActive ? 1 : 0);
   const [loading, setLoading] = useState(false);
 
@@ -167,6 +168,16 @@ const EditUser = (user: User) => {
                   <SelectItem value="0">Tidak Aktif</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="form-group mb-5">
+              <Label required>Kredit Skro</Label>
+              <Input
+                type="text"
+                value={creditScore}
+                onChange={(e) => setCreditScore(e.target.value)}
+                placeholder="Credit Score"
+                required
+              />
             </div>
 
             <DialogFooter>

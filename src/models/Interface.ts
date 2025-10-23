@@ -278,6 +278,7 @@ export interface User {
   modifiedDate: string;
   modifiedBy: string;
   roleId: number;
+  creditScore: number;
 }
 
 export interface RegisteredData {
