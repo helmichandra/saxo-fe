@@ -38,14 +38,14 @@ function TransactionsContent() {
         </div>
 
         <Tabs value={type} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="deposit" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            {/* <TabsTrigger value="deposit" className="flex items-center gap-2">
               <ArrowDownToLine className="w-4 h-4" />
               Deposit
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="withdraw" className="flex items-center gap-2">
               <ArrowUpFromLine className="w-4 h-4" />
-              Withdraw
+              Withdraw / Deposit
             </TabsTrigger>
             <TabsTrigger value="crypto" className="flex items-center gap-2">
               <Coins className="w-4 h-4" />
@@ -53,9 +53,9 @@ function TransactionsContent() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="deposit" className="space-y-4">
+          {/* <TabsContent value="deposit" className="space-y-4">
             <FiatTable />
-          </TabsContent>
+          </TabsContent> */}
           <TabsContent value="withdraw" className="space-y-4">
             <FiatTable />
           </TabsContent>

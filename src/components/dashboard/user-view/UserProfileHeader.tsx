@@ -21,6 +21,7 @@ interface UserProfileHeaderProps {
 
 export function UserProfileHeader({ walletData }: UserProfileHeaderProps) {
   const [fiatBalance, setFiatBalance] = useState<number | null>(null);
+  const [creditScore, setCreditScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const getInitials = (name: string) => {
@@ -73,6 +74,7 @@ export function UserProfileHeader({ walletData }: UserProfileHeaderProps) {
 
         const data = await response.json();
         setFiatBalance(data.data?.balance || 0);
+        setCreditScore(data.data.user?.creditScore || 0);
       } catch (error) {
         console.error("Error fetching balance:", error);
         setFiatBalance(null);
@@ -125,9 +127,9 @@ export function UserProfileHeader({ walletData }: UserProfileHeaderProps) {
 
           {/* Credit Score */}
           <div className="flex items-baseline gap-2">
-            <span className="text-sm text-muted-foreground">Skor Kredit:</span>
+            <span className="text-sm text-muted-foreground">Credit Score:</span>
             <span className="font-semibold text-sm">
-              {walletData?.creditScore || 100}
+              {creditScore}
             </span>
           </div>
         </div>
