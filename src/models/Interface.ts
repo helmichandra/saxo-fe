@@ -131,6 +131,7 @@ export interface AdminData {
   createdBy: string;
   modifiedDate: string;
   modifiedBy: string;
+  creditScore: number;
 }
 
 export interface AdminResponse {

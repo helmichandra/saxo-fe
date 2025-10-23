@@ -1,7 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Suspense, useMemo } from "react";
 import FiatTable from "@/components/dashboard/user-view/transactions/fiatTable";
 import WalletTable from "@/components/dashboard/user-view/transactions/walletTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,13 +10,26 @@ import { ArrowDownToLine, ArrowUpFromLine, Coins } from "lucide-react";
 import { BottomNavigation } from "@/components/dashboard/user-view/BottomNavigation";
 
 function TransactionsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const type = searchParams ?.get("type") || "deposit" || "withdraw" || "crypto";
+
+  // ✅ Tambahkan fallback agar tidak null
+  const params = useMemo(() => new URLSearchParams(searchParams?.toString() ?? ""), [searchParams]);
+  const type = useMemo(() => {
+    const t = params.get("type");
+    return t === "withdraw" || t === "crypto" ? t : "deposit";
+  }, [params]);
+
+  const handleTabChange = (val: string) => {
+    const newParams = new URLSearchParams(params);
+    newParams.set("type", val);
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="container mx-auto p-4 max-w-6xl">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Riwayat Transaksi</h1>
           <p className="text-muted-foreground mt-1">
@@ -24,8 +37,7 @@ function TransactionsContent() {
           </p>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue={type} className="w-full">
+        <Tabs value={type} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="deposit" className="flex items-center gap-2">
               <ArrowDownToLine className="w-4 h-4" />
@@ -44,11 +56,9 @@ function TransactionsContent() {
           <TabsContent value="deposit" className="space-y-4">
             <FiatTable />
           </TabsContent>
-
           <TabsContent value="withdraw" className="space-y-4">
             <FiatTable />
           </TabsContent>
-
           <TabsContent value="crypto" className="space-y-4">
             <WalletTable />
           </TabsContent>
@@ -76,7 +86,6 @@ export default function TransactionsPage() {
     >
       <TransactionsContent />
       <BottomNavigation />
-
     </Suspense>
   );
 }

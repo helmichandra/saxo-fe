@@ -45,6 +45,7 @@ type TradeType = 'BUY' | 'SELL';
 export default function TradingViewChart() {
   const { toast } = useToast();
   const router = useRouter();
+  console.log(sessionId);
 
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
@@ -138,7 +139,7 @@ export default function TradingViewChart() {
       setRefreshing(false);
     }
   };
-
+  
   useEffect(() => {
     fetchPriceData();
     const interval = setInterval(() => fetchPriceData(), 30000);
@@ -230,69 +231,91 @@ export default function TradingViewChart() {
   };
 
   const executeTrade = async (currentPair: any, amount: number, price: number, tradeType: TradeType) => {
+    if(!sessionId){
+      return;
+    }
     try {
+      // Ambil token yang valid (contoh dari cookie/localStorage)
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null; 
+      // Jika tokenmu ada helper khusus, panggil dan pastikan hasilnya string token:
+      // const token = await getClientToken(); 
+  
       const body = {
-        tradeType: tradeType,
+        tradeType,
         coinId: currentPair.id,
         coinCode: currentPair.symbol.replace('USDT', ''),
         coinNominalExchange: amount,
         fiatCurrentcyCheckoutTime: price * amount,
       };
-
-      console.log('Executing trade with payload:', body);
-
+  
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trade/commit-exchange`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          authorization: `${sessionId}`,
+          "Content-Type": "application/json",
+          dev_chronome: "yes",
+          authorization: `${sessionId}`
         },
         body: JSON.stringify(body),
+        redirect: 'follow',
       });
-
+  
+      // 401: kasih toast, jangan langsung logout (biar user lihat errornya)
       if (response.status === 401) {
-        console.warn('Unauthorized. Redirecting...');
-        logout();
+        toast({
+          title: 'Session expired',
+          description: 'Silakan login kembali.',
+          variant: 'destructive',
+          duration: 4000,
+        });
+        // kalau tetap mau logout, tunda sedikit biar toast terlihat:
+        setTimeout(() => logout(), 1000);
         return;
       }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `Failed to ${tradeType.toLowerCase()} coin.`);
+  
+      // Beberapa API balas 204 (No Content)
+      let data: any = null;
+      const text = await response.text();
+      if (text) {
+        try { data = JSON.parse(text); } catch { /* abaikan parse error */ }
       }
-
-      // Show success popup
-      const totalAmount = price * amount;
-      const actionText = tradeType === 'BUY' ? 'Pembelian' : 'Penjualan';
-      const prefix = tradeType === 'BUY' ? '+' : '-';
-      
-      toast({
-        title: `✅ ${actionText} Berhasil`,
-        description: `${prefix}${totalAmount.toLocaleString('id-ID', { minimumFractionDigits: 2 })} USD`,
-        className: tradeType === 'BUY' ? 'bg-green-600 text-white' : 'bg-red-600 text-white',
-      });
-
-      // Reset states
+  
+      if (!response.ok) {
+        throw new Error(data?.message || `Failed to ${tradeType.toLowerCase()} coin.`);
+      }
+  
+      // Sukses
       setIsCountdownActive(false);
       setRemainingTime(0);
       setCoinAmount(0);
-      
-      // Reload after delay
-      setTimeout(() => {
-        location.reload();
-      }, 1500);
-    } catch (error) {
-      console.error('Trade execution error:', error);
+  
+      const totalAmount = price * amount;
+      const actionText = tradeType === 'BUY' ? 'Pembelian' : 'Penjualan';
+      const prefix = tradeType === 'BUY' ? '+' : '-';
+  
       toast({
-        title: 'Error',
-        description: `Gagal ${tradeType === 'BUY' ? 'membeli' : 'menjual'} koin: ${error}`,
-        variant: 'destructive',
+        title: `✅ ${actionText} Berhasil`,
+        description: `${prefix}${totalAmount.toLocaleString('id-ID', { minimumFractionDigits: 2 })} USD`,
+        // hindari custom className ekstrem kalau Sonner-mu strict; boleh hapus jika bikin masalah
+        duration: 3000,
       });
+  
+      // Daripada reload full page, cukup re-fetch data / refresh route:
+      // router.refresh();
+      // atau re-fetch price:
+      setTimeout(() => { fetchPriceData(true); }, 1000);
+  
+    } catch (error: any) {
       setIsCountdownActive(false);
       setRemainingTime(0);
+      toast({
+        title: 'Error',
+        description: `Gagal ${tradeType === 'BUY' ? 'membeli' : 'menjual'} koin: ${error?.message || error}`,
+        variant: 'destructive',
+        duration: 5000,
+      });
     }
   };
+  
 
   const startCountdown = () => {
     if (orderAmount <= 0) {
@@ -535,15 +558,7 @@ export default function TradingViewChart() {
             <div className="flex items-center justify-between">
               <DialogTitle>
                 Konfirmasi {orderType === 'BUY' ? 'Beli Naik' : 'Beli Turun'}
-              </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOrderModalOpen(false)}
-                className="h-6 w-6"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              </DialogTitle>     
             </div>
           </DialogHeader>
 

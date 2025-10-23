@@ -1,13 +1,14 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { CryptoWallet } from "@/models/Interface";
-import ViewTransaction from "./viewTransaction";
-import { sessionId } from "@/lib/getSession";
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { CryptoWallet } from '@/models/Interface';
+import ViewTransaction from './viewTransaction';
+import { sessionId } from '@/lib/getSession';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Pagination,
   PaginationContent,
@@ -15,11 +16,11 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/pagination';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -27,16 +28,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { MoreVertical, Search } from "lucide-react";
-import { logout } from "@/lib/auth";
+} from '@/components/ui/table';
+import { MoreVertical, Search } from 'lucide-react';
+import { logout } from '@/lib/auth';
 
 export default function WalletTable() {
   const [transactions, setTransactions] = useState<CryptoWallet[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<CryptoWallet[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -45,17 +46,17 @@ export default function WalletTable() {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/trade/exchange-list`,
           {
-            method: "POST",
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
-              dev_chronome: "yes",
+              'Content-Type': 'application/json',
+              dev_chronome: 'yes',
               authorization: `${sessionId}`,
             },
           }
         );
 
         if (response.status === 401) {
-          console.warn("Unauthorized. Redirecting...");
+          console.warn('Unauthorized. Redirecting...');
           logout();
           return;
         }
@@ -68,7 +69,7 @@ export default function WalletTable() {
         setTransactions(data.data);
         setFilteredTransactions(data.data);
       } catch (error) {
-        console.error("Failed to fetch exchange transactions:", error);
+        console.error('Failed to fetch exchange transactions:', error);
       } finally {
         setLoading(false);
       }
@@ -80,9 +81,9 @@ export default function WalletTable() {
   useEffect(() => {
     const filtered = transactions.filter(
       (transaction) =>
-        transaction.tradingId.includes(searchTerm) ||
-        transaction.cryptocurrencyType.coinName
-          .toLowerCase()
+        transaction.tradingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.cryptocurrencyType?.coinName
+          ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -163,7 +164,7 @@ export default function WalletTable() {
                         {transaction.tradingId}
                       </TableCell>
                       <TableCell className="font-semibold">
-                        {transaction.cryptocurrencyType.coinName}
+                        {transaction.cryptocurrencyType?.coinName || 'Unknown'}
                       </TableCell>
                       <TableCell className="font-mono">
                         {transaction.coinAmount}
@@ -172,7 +173,13 @@ export default function WalletTable() {
                         <span className="capitalize">{transaction.type}</span>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {transaction.createdDate}
+                        {new Date(transaction.createdDate).toLocaleString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -201,7 +208,7 @@ export default function WalletTable() {
                     <PaginationPrevious
                       onClick={handlePreviousPage}
                       className={
-                        currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                        currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                       }
                     />
                   </PaginationItem>
@@ -221,8 +228,8 @@ export default function WalletTable() {
                       onClick={handleNextPage}
                       className={
                         currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
+                          ? 'pointer-events-none opacity-50'
+                          : 'cursor-pointer'
                       }
                     />
                   </PaginationItem>
