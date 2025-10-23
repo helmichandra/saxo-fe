@@ -40,6 +40,8 @@ interface CryptoPrice {
   volume: string;
 }
 
+type TradeType = 'BUY' | 'SELL';
+
 export default function TradingViewChart() {
   const { toast } = useToast();
   const router = useRouter();
@@ -56,7 +58,8 @@ export default function TradingViewChart() {
   const [loading, setLoading] = useState(false);
 
   // Modal states
-  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [orderType, setOrderType] = useState<TradeType>('BUY');
   const [selectedDuration, setSelectedDuration] = useState<number>(60);
   const [orderAmount, setOrderAmount] = useState<number>(0);
   
@@ -64,6 +67,7 @@ export default function TradingViewChart() {
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [orderPrice, setOrderPrice] = useState<number>(0);
+  const [activeOrderType, setActiveOrderType] = useState<TradeType>('BUY');
 
   const [priceData, setPriceData] = useState<CryptoPrice>({
     price: '0',
@@ -210,7 +214,7 @@ export default function TradingViewChart() {
   const isPositive = priceData.changePercent >= 0;
   const priceNumber = parseFloat(priceData.price.replace(/,/g, '')) || 0;
 
-  const openBuyModal = () => {
+  const openOrderModal = (type: TradeType) => {
     if (coinAmount <= 0) {
       toast({
         title: 'Error',
@@ -219,15 +223,16 @@ export default function TradingViewChart() {
       });
       return;
     }
+    setOrderType(type);
     setOrderAmount(coinAmount);
     setSelectedDuration(60);
-    setIsBuyModalOpen(true);
+    setIsOrderModalOpen(true);
   };
 
-  const executeTrade = async (currentPair: any, amount: number, price: number) => {
+  const executeTrade = async (currentPair: any, amount: number, price: number, tradeType: TradeType) => {
     try {
       const body = {
-        tradeType: 'BUY',
+        tradeType: tradeType,
         coinId: currentPair.id,
         coinCode: currentPair.symbol.replace('USDT', ''),
         coinNominalExchange: amount,
@@ -254,15 +259,18 @@ export default function TradingViewChart() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to buy coin.');
+        throw new Error(data.message || `Failed to ${tradeType.toLowerCase()} coin.`);
       }
 
       // Show success popup
       const totalAmount = price * amount;
+      const actionText = tradeType === 'BUY' ? 'Pembelian' : 'Penjualan';
+      const prefix = tradeType === 'BUY' ? '+' : '-';
+      
       toast({
-        title: '✅ Pembelian Berhasil',
-        description: `+${totalAmount.toLocaleString('id-ID', { minimumFractionDigits: 2 })} USD`,
-        className: 'bg-green-600 text-white',
+        title: `✅ ${actionText} Berhasil`,
+        description: `${prefix}${totalAmount.toLocaleString('id-ID', { minimumFractionDigits: 2 })} USD`,
+        className: tradeType === 'BUY' ? 'bg-green-600 text-white' : 'bg-red-600 text-white',
       });
 
       // Reset states
@@ -278,7 +286,7 @@ export default function TradingViewChart() {
       console.error('Trade execution error:', error);
       toast({
         title: 'Error',
-        description: `Gagal membeli koin: ${error}`,
+        description: `Gagal ${tradeType === 'BUY' ? 'membeli' : 'menjual'} koin: ${error}`,
         variant: 'destructive',
       });
       setIsCountdownActive(false);
@@ -302,11 +310,13 @@ export default function TradingViewChart() {
     setOrderPrice(currentPrice);
     setRemainingTime(selectedDuration);
     setIsCountdownActive(true);
-    setIsBuyModalOpen(false);
+    setActiveOrderType(orderType);
+    setIsOrderModalOpen(false);
 
+    const actionText = orderType === 'BUY' ? 'Beli Naik' : 'Beli Turun';
     toast({
       title: 'Order Dimulai',
-      description: `Pesanan akan dieksekusi dalam ${selectedDuration} detik`,
+      description: `${actionText} akan dieksekusi dalam ${selectedDuration} detik`,
     });
 
     let timeLeft = selectedDuration;
@@ -319,7 +329,7 @@ export default function TradingViewChart() {
         if (countdownIntervalRef.current) {
           clearInterval(countdownIntervalRef.current);
         }
-        executeTrade(currentPair, orderAmount, currentPrice);
+        executeTrade(currentPair, orderAmount, currentPrice, orderType);
       }
     }, 1000);
   };
@@ -347,7 +357,6 @@ export default function TradingViewChart() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden pb-16">
       <div className="container mx-auto p-4 max-w-6xl flex-1 flex flex-col">
@@ -371,13 +380,23 @@ export default function TradingViewChart() {
 
         {/* Countdown Alert */}
         {isCountdownActive && (
-          <Card className="p-4 mb-4 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-lg">
+          <Card className={`p-4 mb-4 shadow-lg ${
+            activeOrderType === 'BUY' 
+              ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+              : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'
+          }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
+                {activeOrderType === 'BUY' ? (
+                  <TrendingUp className="w-5 h-5 text-green-600 animate-pulse" />
+                ) : (
+                  <TrendingDown className="w-5 h-5 text-red-600 animate-pulse" />
+                )}
                 <div>
-                  <p className="font-semibold text-blue-900">Order Aktif</p>
-                  <p className="text-sm text-blue-700">
+                  <p className={`font-semibold ${activeOrderType === 'BUY' ? 'text-green-900' : 'text-red-900'}`}>
+                    Order {activeOrderType === 'BUY' ? 'Beli Naik' : 'Beli Turun'} Aktif
+                  </p>
+                  <p className={`text-sm ${activeOrderType === 'BUY' ? 'text-green-700' : 'text-red-700'}`}>
                     {orderAmount} {getCurrentPair().symbol.replace('USDT', '')} @ ${orderPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                   <p className="text-xs text-red-600 font-medium mt-1">
@@ -386,8 +405,10 @@ export default function TradingViewChart() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-blue-600">{formatTime(remainingTime)}</p>
-                <p className="text-xs text-blue-700">tersisa</p>
+                <p className={`text-3xl font-bold ${activeOrderType === 'BUY' ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatTime(remainingTime)}
+                </p>
+                <p className={`text-xs ${activeOrderType === 'BUY' ? 'text-green-700' : 'text-red-700'}`}>tersisa</p>
               </div>
             </div>
           </Card>
@@ -488,7 +509,7 @@ export default function TradingViewChart() {
           <Button
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-            onClick={openBuyModal}
+            onClick={() => openOrderModal('BUY')}
             disabled={isCountdownActive}
           >
             <TrendingUp className="w-5 h-5 mr-2" />
@@ -498,7 +519,7 @@ export default function TradingViewChart() {
             size="lg"
             variant="destructive"
             className="font-semibold"
-            onClick={openBuyModal}
+            onClick={() => openOrderModal('SELL')}
             disabled={isCountdownActive}
           >
             <TrendingDown className="w-5 h-5 mr-2" />
@@ -507,16 +528,18 @@ export default function TradingViewChart() {
         </div>
       </div>
 
-      {/* Buy Modal */}
-      <Dialog open={isBuyModalOpen} onOpenChange={setIsBuyModalOpen}>
+      {/* Order Modal */}
+      <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex items-center justify-between">
-              <DialogTitle>Konfirmasi pemesanan</DialogTitle>
+              <DialogTitle>
+                Konfirmasi {orderType === 'BUY' ? 'Beli Naik' : 'Beli Turun'}
+              </DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsBuyModalOpen(false)}
+                onClick={() => setIsOrderModalOpen(false)}
                 className="h-6 w-6"
               >
                 <X className="h-4 w-4" />
@@ -552,7 +575,9 @@ export default function TradingViewChart() {
                 type="number"
                 value={orderAmount}
                 onChange={(e) => setOrderAmount(parseFloat(e.target.value) || 0)}
-                className="w-full text-center text-2xl font-bold text-red-500 py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                className={`w-full text-center text-2xl font-bold py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none ${
+                  orderType === 'BUY' ? 'text-green-600' : 'text-red-600'
+                }`}
                 placeholder="0"
               />
             </div>
@@ -580,7 +605,11 @@ export default function TradingViewChart() {
             <Button
               onClick={startCountdown}
               disabled={orderAmount <= 0}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-base"
+              className={`w-full font-semibold py-6 text-base ${
+                orderType === 'BUY' 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-red-600 hover:bg-red-700'
+              } text-white`}
             >
               Mulai Order
             </Button>
