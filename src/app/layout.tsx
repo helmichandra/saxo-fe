@@ -2,8 +2,6 @@ import React from "react";
 
 import "./globals.css";
 
-import Script from "next/script";
-
 export default function RootLayout({
   children,
 }: {
@@ -23,15 +21,15 @@ export default function RootLayout({
           httpEquiv="Content-Security-Policy"
           content="upgrade-insecure-requests"
         />
+
+        <script
+          async
+          src="https://embed.tawk.to/676efd3349e2fd8dfeff31fd/1ig4oq54v"
+        ></script>
       </head>
 
       <body>
         {children}
-
-        <Script
-          strategy="lazyOnload"
-          src="https://embed.tawk.to/676efd3349e2fd8dfeff31fd/1ig4oq54v"
-        />
       </body>
     </html>
   );
