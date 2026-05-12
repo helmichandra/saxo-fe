@@ -81,3 +81,20 @@ nextjs-portal {
     @apply bg-background text-foreground;
   }
 }
+@font-face {
+  font-family: "GeistSans";
+  src: url("/fonts/GeistVF.woff") format("woff");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "GeistMono";
+  src: url("/fonts/GeistMonoVF.woff") format("woff");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+body {
+  font-family: "GeistSans", sans-serif;
+}
