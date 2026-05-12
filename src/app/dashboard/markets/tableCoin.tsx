@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 
 import {
   Pagination,
@@ -81,7 +80,7 @@ const TableCoin = () => {
               <td className="sticky md:whitespace-nowrap whitespace-normal left-0 w-fit px-3 py-0 md:px-7 md:py-4 me-2 bg-white">
                 <div className="flex items-center">
                   {crypto.logoUrl ? (
-                    <Image
+                    <img
                       src={crypto.logoUrl}
                       alt={crypto.name}
                       className="w-6 h-6 object-contain"

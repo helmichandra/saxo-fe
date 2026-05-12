@@ -1,51 +1,77 @@
 "use client";
+
 export const dynamic = "force-dynamic";
-import React, { PropsWithChildren, useEffect, useState, useCallback } from "react";
+
+import React, {
+  PropsWithChildren,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+
 import { Button } from "@/components/ui/button";
+
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Logo from "/public/image/logo.png";
+
+import { useRouter } from "next/router";
+
 import { getCookie, logout } from "@/lib/auth";
 
-const AdminAuth = ({ children }: PropsWithChildren) => {
+const AdminAuth = ({
+  children,
+}: PropsWithChildren) => {
   const router = useRouter();
-  const [roleName, setRoleName] = useState("");
-  const [currentRoleId, setCurrentRoleId] = useState("");
-  const [currentFullName, setCurrentFullName] = useState("");
 
+  const [roleName, setRoleName] =
+    useState("");
 
+  const [currentRoleId, setCurrentRoleId] =
+    useState("");
 
-  const updateRoleAndSession = useCallback(() => {
-    const sessionId = getCookie("sessionId");
-    const roleId = getCookie("roleId");
-    const fullName = getCookie("fullName");
+  const [currentFullName, setCurrentFullName] =
+    useState("");
 
-    if (!sessionId) {
-      router.push("/auth/signin");
-      return;
-    }
+  const updateRoleAndSession =
+    useCallback(() => {
+      const sessionId =
+        getCookie("sessionId");
 
-    setCurrentRoleId(roleId || "");
-    setCurrentFullName(fullName || "");
+      const roleId =
+        getCookie("roleId");
 
-    switch (roleId) {
-      case "777":
-        setRoleName("Super Admin");
-        break;
-      case "555":
-        setRoleName("Admin");
-        break;
-      default:
-        setRoleName("Member");
-    }
-  }, [router]);
+      const fullName =
+        getCookie("fullName");
+
+      if (!sessionId) {
+        router.push("/auth/signin");
+        return;
+      }
+
+      setCurrentRoleId(roleId || "");
+
+      setCurrentFullName(fullName || "");
+
+      switch (roleId) {
+        case "777":
+          setRoleName("Super Admin");
+          break;
+
+        case "555":
+          setRoleName("Admin");
+          break;
+
+        default:
+          setRoleName("Member");
+      }
+    }, [router]);
 
   useEffect(() => {
     updateRoleAndSession();
 
-    // Refresh every 1 minute
-    const interval = setInterval(updateRoleAndSession, 60000);
+    const interval = setInterval(
+      updateRoleAndSession,
+      60000
+    );
 
     return () => clearInterval(interval);
   }, [updateRoleAndSession]);
@@ -55,19 +81,26 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
       <header className="mb-2.5 sticky top-0 z-50 bg-[#aff0ee]">
         <div className="header-wrap p-4 border-b border-gray-200">
           <nav className="max-w-container mx-auto flex items-start md:items-center justify-between flex-wrap flex-col-reverse md:flex-row gap-4 md:gap-0">
-            {/* Left Side - Logo */}
-            <div className="flex flex-wrap items-center space-x-0 md:space-x-md-2 gap-5 md:gap-0">
-              <Link href="/" className="cursor-pointer hidden md:block">
-                <Image
-                  src={Logo}
-                  width={94}
-                  height={40}
+
+            {/* LEFT */}
+
+            <div className="flex flex-wrap items-center gap-5 md:gap-0">
+
+              {/* LOGO */}
+
+              <Link
+                href="/"
+                className="cursor-pointer hidden md:block"
+              >
+                <img
+                  src="/image/logo.png"
                   alt="Saxo Crypto"
-                  className="self-center"
+                  className="w-[94px] h-auto object-contain"
                 />
               </Link>
+
               {currentRoleId === "1" && (
-                <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+                <div className="ps-0 md:ps-7">
                   <Link
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/markets"
@@ -76,8 +109,9 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   </Link>
                 </div>
               )}
+
               {currentRoleId === "1" && (
-                <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+                <div className="ps-0 md:ps-7">
                   <Link
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/transactions"
@@ -86,8 +120,9 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   </Link>
                 </div>
               )}
+
               {currentRoleId === "1" && (
-                <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+                <div className="ps-0 md:ps-7">
                   <Link
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/portofolios"
@@ -96,7 +131,8 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   </Link>
                 </div>
               )}
-              <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+
+              <div className="ps-0 md:ps-7">
                 <Link
                   className="text-gray-700 hover:text-blue-500"
                   href="/dashboard/requests"
@@ -104,7 +140,8 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   Permintaan
                 </Link>
               </div>
-              <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+
+              <div className="ps-0 md:ps-7">
                 <Link
                   className="text-gray-700 hover:text-blue-500"
                   href="/dashboard/banks"
@@ -112,8 +149,10 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   Bank
                 </Link>
               </div>
-              {(currentRoleId === "777" || currentRoleId === "555") && (
-                <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+
+              {(currentRoleId === "777" ||
+                currentRoleId === "555") && (
+                <div className="ps-0 md:ps-7">
                   <Link
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/wallets"
@@ -122,8 +161,10 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
                   </Link>
                 </div>
               )}
-              {(currentRoleId === "777" || currentRoleId === "555") && (
-                <div className="flex space-x-0 md:space-x-4 ps-0 md:ps-7">
+
+              {(currentRoleId === "777" ||
+                currentRoleId === "555") && (
+                <div className="ps-0 md:ps-7">
                   <Link
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/users"
@@ -134,24 +175,33 @@ const AdminAuth = ({ children }: PropsWithChildren) => {
               )}
             </div>
 
+            {/* RIGHT */}
+
             <div className="flex items-center space-x-4 justify-between w-full md:w-fit md:justify-start">
               <div className="font-semibold">
                 <div>{currentFullName}</div>
+
                 <div className="text-sm text-gray-500">
-                  {roleName ? roleName : "Role Name"}
+                  {roleName || "Role Name"}
                 </div>
               </div>
 
               <Link href="/auth/signin">
-                <Button onClick={logout} variant="default">
-                  Keluar <span></span>
+                <Button
+                  onClick={logout}
+                  variant="default"
+                >
+                  Keluar
                 </Button>
               </Link>
             </div>
           </nav>
         </div>
       </header>
-      <div className="max-w-container mx-auto px-10">{children}</div>
+
+      <div className="max-w-container mx-auto px-10">
+        {children}
+      </div>
     </div>
   );
 };

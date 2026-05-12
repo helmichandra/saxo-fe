@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 import Link from "next/link";
-import Image from "next/image";
 
 import AdminAuth from "@/app/layouts/adminAuth";
 
@@ -180,7 +179,7 @@ const CoinDetailPage = () => {
         <div className="flex-1 flex gap-4 p-4 flex-col md:flex-row">
           <div className="flex-1 p-4 flex-row flex items-center gap-4">
             <div className="flex items-center gap-4">
-              <Image
+              <img
                 src={crypto.logoUrl}
                 alt={crypto.name}
                 width={34}

@@ -1,8 +1,4 @@
-import Image from "next/image";
 import React from "react";
-import CerBinance from "/public/image/cer-binance.png";
-import CerIcdx from "/public/image/cer-icdx.png";
-import CerMendagri from "/public/image/cer-mendagri.png";
 
 const CertificateSection = () => {
   return (
@@ -10,20 +6,23 @@ const CertificateSection = () => {
       <div className="certificate-title font-bold text-xl">
         Terdaftar dan diawasi oleh
       </div>
-      <div className="certificate-list flex flex-col md:flex-row gap-10">
-        <Image
-          src={CerBinance}
-          alt="Certificate"
+
+      <div className="certificate-list flex flex-col md:flex-row gap-10 items-center">
+        <img
+          src="/image/cer-binance.png"
+          alt="Certificate Binance"
           className="max-w-[130px] max-h-[35px] md:max-w-[238px] md:max-h-[45px] object-contain"
         />
-        <Image
-          src={CerIcdx}
-          alt="Certificate"
+
+        <img
+          src="/image/cer-icdx.png"
+          alt="Certificate ICDX"
           className="max-w-[130px] max-h-[35px] md:max-w-[238px] md:max-h-[45px] object-contain"
         />
-        <Image
-          src={CerMendagri}
-          alt="Certificate"
+
+        <img
+          src="/image/cer-mendagri.png"
+          alt="Certificate Mendagri"
           className="max-w-[130px] max-h-[35px] md:max-w-[238px] md:max-h-[45px] object-contain"
         />
       </div>
