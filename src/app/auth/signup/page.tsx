@@ -1,17 +1,24 @@
 "use client";
+
 import React, { SyntheticEvent, useEffect, useState } from "react";
+
 import NonAuth from "@/app/layouts/nonAuth";
+
+import { useRouter } from "next/router";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+
+import { useToast } from "@/hooks/use-toast";
+
 import {
   validateEmail,
   validatePassword,
   validatePhoneNumber,
 } from "@/lib/form-validation";
+
 import { PhonePrefix } from "@/models/Interface";
 
 import {
@@ -32,31 +39,46 @@ const SignUpPage = () => {
   const [fullNameError, setFullNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [registeredCodeError, setRegisteredCodeError] = useState("");
-  const [phoneNumberError, setPhoneNumberError] = useState("");
+  const [registeredCodeError, setRegisteredCodeError] =
+    useState("");
+  const [phoneNumberError, setPhoneNumberError] =
+    useState("");
 
-  const [phonePrefixes, setPhonePrefixes] = useState<PhonePrefix[]>([]);
-  const [selectedPrefix, setSelectedPrefix] = useState("62");
+  const [phonePrefixes, setPhonePrefixes] = useState<
+    PhonePrefix[]
+  >([]);
+
+  const [selectedPrefix, setSelectedPrefix] =
+    useState("62");
 
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchPhonePrefixes = async () => {
       try {
         setLoading(true);
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/user/phone-prefix`
         );
+
         const data = await response.json();
+
         setPhonePrefixes(data.data);
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching phone prefixes:", error);
+        console.error(
+          "Error fetching phone prefixes:",
+          error
+        );
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchPhonePrefixes();
   }, []);
 
@@ -64,21 +86,31 @@ const SignUpPage = () => {
     setSelectedPrefix(value.replace("+", ""));
   };
 
-  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneNumberChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const inputNumber = e.target.value;
+
     if (!validatePhoneNumber(inputNumber)) {
-      setPhoneNumberError("Tolong masukkan nomor handphone yang valid");
+      setPhoneNumberError(
+        "Tolong masukkan nomor handphone yang valid"
+      );
     } else {
       setPhoneNumberError("");
     }
+
     setPhoneNumber(inputNumber);
   };
 
-  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFullNameChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const inputFullName = e.target.value;
 
     if (inputFullName.trim() === "") {
-      setFullNameError("Tolong masukkan nama lengkap anda");
+      setFullNameError(
+        "Tolong masukkan nama lengkap anda"
+      );
     } else {
       setFullNameError("");
     }
@@ -86,7 +118,9 @@ const SignUpPage = () => {
     setFullName(inputFullName);
   };
 
-  const handleEmailchange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const inputEmail = e.target.value;
 
     if (!validateEmail(inputEmail)) {
@@ -98,14 +132,19 @@ const SignUpPage = () => {
     setEmail(inputEmail);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const inputPassword = e.target.value;
 
     if (!validatePassword(inputPassword)) {
-      setPasswordError("Tolong masukkan password yang valid");
+      setPasswordError(
+        "Tolong masukkan password yang valid"
+      );
     } else {
       setPasswordError("");
     }
+
     setPassword(inputPassword);
   };
 
@@ -115,10 +154,13 @@ const SignUpPage = () => {
     const inputRegisteredCode = e.target.value;
 
     if (inputRegisteredCode.trim() === "") {
-      setRegisteredCodeError("Tolong masukkan kode verifikasi");
+      setRegisteredCodeError(
+        "Tolong masukkan kode verifikasi"
+      );
     } else {
       setRegisteredCodeError("");
     }
+
     setRegisteredCode(inputRegisteredCode);
   };
 
@@ -128,7 +170,10 @@ const SignUpPage = () => {
     let hasError = false;
 
     if (fullName.trim() === "") {
-      setFullNameError("Tolong masukkan nama lengkap anda");
+      setFullNameError(
+        "Tolong masukkan nama lengkap anda"
+      );
+
       hasError = true;
     } else {
       setFullNameError("");
@@ -136,46 +181,66 @@ const SignUpPage = () => {
 
     if (!validateEmail(email)) {
       setEmailError("Tolong masukkan email yang valid");
+
       hasError = true;
     } else {
       setEmailError("");
     }
 
     if (!validatePassword(password)) {
-      setPasswordError("Tolong masukkan password yang valid");
+      setPasswordError(
+        "Tolong masukkan password yang valid"
+      );
+
       hasError = true;
     } else {
       setPasswordError("");
     }
 
     if (registeredCode.trim() === "") {
-      setRegisteredCodeError("Tolong masukkan kode verifikasi");
+      setRegisteredCodeError(
+        "Tolong masukkan kode verifikasi"
+      );
+
       hasError = true;
     } else {
       setRegisteredCodeError("");
     }
 
+    if (!validatePhoneNumber(phoneNumber)) {
+      setPhoneNumberError(
+        "Tolong masukkan nomor handphone yang valid"
+      );
+
+      hasError = true;
+    } else {
+      setPhoneNumberError("");
+    }
+
     if (hasError) {
       return;
     }
+
     const fullPhoneNumber = `${selectedPrefix}${phoneNumber}`;
+
     try {
       setLoading(true);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/user/registration/user-reg`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
             dev_chronome: "yes",
           },
           body: JSON.stringify({
             userFullName: fullName,
-            phoneNumber: fullPhoneNumber.replace("+", ""),
+            phoneNumber:
+              fullPhoneNumber.replace("+", ""),
             passwordRegister: password,
             invitationCode: registeredCode,
-            email: email,
+            email,
           }),
         }
       );
@@ -185,32 +250,37 @@ const SignUpPage = () => {
       if (!response.ok) {
         toast({
           title: "Registrasi Gagal",
-          description: data.message,
+          description:
+            data.message ||
+            "Registrasi gagal. Silahkan coba lagi.",
           variant: "destructive",
           duration: 5000,
         });
-        setLoading(false);
-        router.refresh();
+
         return;
       }
 
       toast({
-        title: `Registrasi berhasil`,
-        description: `Anda akan diarahkan ke halaman login dalam 5 detik`,
+        title: "Registrasi Berhasil",
+        description:
+          "Anda akan diarahkan ke halaman login dalam 5 detik",
         duration: 5000,
       });
-      setLoading(false);
-      setTimeout(() => router.push("/auth/signin"), 5000);
+
+      setTimeout(() => {
+        router.push("/auth/signin");
+      }, 5000);
     } catch (error) {
-      router.refresh();
-      setLoading(false);
       console.error("Error sending code", error);
+
       toast({
-        title: "Registrasi gagal",
-        description: "" + error,
+        title: "Registrasi Gagal",
+        description: `${error}`,
         variant: "destructive",
         duration: 5000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -218,130 +288,215 @@ const SignUpPage = () => {
     <NonAuth>
       <div className="max-w-signup mx-auto py-10 px-10 flex flex-col items-center justify-center min-h-screen">
         <div className="welcome-head-auth">
-          <h1 className="text-2xl text-center font-semibold">Register</h1>
+          <h1 className="text-2xl text-center font-semibold">
+            Register
+          </h1>
+
           <p className="text-base text-center">
-            Registrasi data Anda untuk keperluan data pribadi Anda
+            Registrasi data Anda untuk keperluan data
+            pribadi Anda
           </p>
         </div>
+
         <div className="sign-content mx-auto py-16 max-w-signup w-full">
           <Toaster />
+
           <form onSubmit={submit}>
             <div className="form-group mb-5">
-              <Label required>Nomor Handphone</Label>
+              <Label>
+                Nomor Handphone{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+
               <div className="flex space-x-2">
                 <Select onValueChange={handlePrefixChange}>
                   <SelectTrigger className="w-[189px]">
-                    <SelectValue placeholder={selectedPrefix} />
+                    <SelectValue
+                      placeholder={selectedPrefix}
+                    />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {loading && <p className="text-xs">Loading...</p>}
+                    {loading && (
+                      <p className="text-xs px-2 py-1">
+                        Loading...
+                      </p>
+                    )}
+
                     {phonePrefixes.map((prefix) => (
-                      <SelectItem key={prefix.id} value={prefix.prefix}>
+                      <SelectItem
+                        key={prefix.id}
+                        value={prefix.prefix}
+                      >
                         {prefix.country} {prefix.prefix}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+
                 <div className="w-full">
                   <Input
                     type="text"
                     placeholder="812345678"
                     required
                     value={phoneNumber}
-                    onChange={handlePhoneNumberChange}
-                    message={phoneNumberError}
+                    onChange={
+                      handlePhoneNumberChange
+                    }
                     className="flex-grow"
-                    />
+                  />
+
+                  {phoneNumberError && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {phoneNumberError}
+                    </p>
+                  )}
                 </div>
               </div>
-              {/* <p className="mt-2 text-sm text-red-600 dark:text-red-500">
-                Nomor handphone tidak dapat diubah setelah pendaftaran
-              </p> */}
             </div>
+
             <div className="form-group mb-5">
-              <Label required>Kode Register</Label>
+              <Label>
+                Kode Register{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+
               <Input
-                type="name"
+                type="text"
                 placeholder="Kode Register"
                 required
                 value={registeredCode}
-                onChange={handleRegisteredCodeChange}
-                message={registeredCodeError}
+                onChange={
+                  handleRegisteredCodeChange
+                }
+                className="mt-2"
               />
+
+              {registeredCodeError && (
+                <p className="mt-1 text-sm text-red-500">
+                  {registeredCodeError}
+                </p>
+              )}
             </div>
+
             <div className="form-group mb-5">
-              <Label required>Nama Lengkap</Label>
+              <Label>
+                Nama Lengkap{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+
               <Input
-                type="name"
+                type="text"
                 placeholder="Full Name"
                 required
                 value={fullName}
                 onChange={handleFullNameChange}
-                message={fullNameError}
+                className="mt-2"
               />
+
+              {fullNameError && (
+                <p className="mt-1 text-sm text-red-500">
+                  {fullNameError}
+                </p>
+              )}
             </div>
+
             <div className="form-group mb-5">
-              <Label required>Email</Label>
+              <Label>
+                Email{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+
               <Input
                 type="email"
                 placeholder="Email"
                 required
                 value={email}
-                onChange={handleEmailchange}
-                message={emailError}
+                onChange={handleEmailChange}
+                className="mt-2"
               />
+
+              {emailError && (
+                <p className="mt-1 text-sm text-red-500">
+                  {emailError}
+                </p>
+              )}
             </div>
+
             <div className="form-group mb-5">
-              <Label required>Password</Label>
+              <Label>
+                Password{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+
               <Input
                 type="password"
-                placeholder="[******]"
+                placeholder="******"
                 required
                 value={password}
                 onChange={handlePasswordChange}
-                message={passwordError}
+                className="mt-2"
               />
+
+              {passwordError && (
+                <p className="mt-1 text-sm text-red-500">
+                  {passwordError}
+                </p>
+              )}
+
               <div className="mt-2">
                 <p className="text-sm font-bold text-gray-500">
                   Password harus
                 </p>
+
                 <ul className="text-sm list-disc ps-5 text-gray-500">
                   <li>
-                    Harus memiliki <strong>lebih dari 6 karakter</strong>
+                    Memiliki lebih dari{" "}
+                    <strong>6 karakter</strong>
                   </li>
+
                   <li>
-                    Wajib menyertakan minimal <strong>satu simbol</strong>
+                    Mengandung minimal{" "}
+                    <strong>satu simbol</strong>
                   </li>
+
                   <li>
-                    Harus mengandung setidkanya{" "}
-                    <strong>satu huruf besar</strong>
+                    Mengandung minimal{" "}
+                    <strong>
+                      satu huruf besar
+                    </strong>
                   </li>
                 </ul>
               </div>
             </div>
+
             <div className="flex justify-end">
-              <Button variant="default" type="submit" disabled={loading}>
+              <Button
+                variant="default"
+                type="submit"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
-                    <span>Loading </span>
+                    <span>Loading</span>
+
                     <svg
                       aria-hidden="true"
                       role="status"
-                      className="inline w-4 h-4 mr-3 text-white animate-spin"
+                      className="inline w-4 h-4 ml-2 text-white animate-spin"
                       viewBox="0 0 100 101"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      >
+                    >
                       <path
                         d="M100 50.5A50 50 0 1 1 50 0v10a40 40 0 1 0 40 40h10z"
                         fill="currentColor"
-                        />
+                      />
                     </svg>
                   </>
                 ) : (
                   "Daftar Sekarang"
                 )}
-
               </Button>
             </div>
           </form>
