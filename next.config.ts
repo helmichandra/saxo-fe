@@ -1,22 +1,21 @@
-import { NextConfig } from "next";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  assetPrefix : "."
-};
-
-module.exports = {
+  assetPrefix: ".",
   images: {
-    domains: ["s2.coinmarketcap.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "s2.coinmarketcap.com",
+      },
+    ],
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  typescript:{
+  typescript: {
     ignoreBuildErrors: true,
-  }
+  },
 };
 
 export default nextConfig;
