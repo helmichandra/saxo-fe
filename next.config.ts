@@ -1,18 +1,14 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   assetPrefix: ".",
+
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "s2.coinmarketcap.com",
-      },
-    ],
+    domains: ["s2.coinmarketcap.com"],
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   typescript: {
     ignoreBuildErrors: true,
   },
