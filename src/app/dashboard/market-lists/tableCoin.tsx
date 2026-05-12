@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { TrendingUp, TrendingDown, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -362,7 +361,7 @@ const TableCoin = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {crypto.logoUrl ? (
-                          <Image
+                          <img
                             src={crypto.logoUrl}
                             alt={crypto.name}
                             className="rounded-full flex-shrink-0"
@@ -453,7 +452,7 @@ const TableCoin = () => {
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {crypto.logoUrl ? (
-                      <Image
+                      <img
                         src={crypto.logoUrl}
                         alt={crypto.name}
                         className="rounded-full flex-shrink-0"
@@ -598,7 +597,7 @@ const TableCoin = () => {
               {/* Crypto Info */}
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 {selectedCrypto.logoUrl && (
-                  <Image
+                  <img
                     src={selectedCrypto.logoUrl}
                     alt={selectedCrypto.name}
                     width={40}
