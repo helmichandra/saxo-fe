@@ -1,7 +1,17 @@
 "use client";
-import { useRouter, usePathname } from "next/navigation";
-import { Home, TrendingUp, User } from "lucide-react";
+
+import React from "react";
+
+import { useRouter } from "next/router";
+
+import {
+  Home,
+  TrendingUp,
+  User,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -13,7 +23,8 @@ interface NavItem {
 
 export function BottomNavigation() {
   const router = useRouter();
-  const pathname = usePathname();
+
+  const pathname = router.pathname;
 
   const navItems: NavItem[] = [
     {
@@ -36,7 +47,9 @@ export function BottomNavigation() {
     },
   ];
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    return pathname === path;
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg backdrop-blur-sm z-50">
@@ -62,7 +75,10 @@ export function BottomNavigation() {
               >
                 {item.icon}
               </div>
-              <span className="text-xs font-medium">{item.label}</span>
+
+              <span className="text-xs font-medium">
+                {item.label}
+              </span>
             </Button>
           ))}
         </div>

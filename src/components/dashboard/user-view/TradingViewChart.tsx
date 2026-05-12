@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
+
 import { Button } from '@/components/ui/button';
+
 import {
   Select,
   SelectContent,
@@ -10,18 +12,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
 import { Card } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { TrendingUp, TrendingDown, RefreshCw, X, Clock } from 'lucide-react';
+
+import {
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  Clock,
+} from 'lucide-react';
+
 import { BottomNavigation } from '@/components/dashboard/user-view/BottomNavigation';
+
 import { sessionId } from '@/lib/getSession';
+
 import { useToast } from '@/hooks/use-toast';
+
 import { logout } from '@/lib/auth';
 
 // Extend Window interface untuk TradingView
