@@ -6,7 +6,6 @@ import React, {
 
 import { Button } from "@/components/ui/button";
 
-import Link from "next/link";
 
 const NonAuth = ({
   children,
@@ -20,7 +19,7 @@ const NonAuth = ({
             {/* LEFT */}
 
             <div className="flex items-center space-x-2">
-              <Link
+              <a
                 href="/"
                 className="cursor-pointer"
               >
@@ -29,23 +28,23 @@ const NonAuth = ({
                   alt="Saxo Crypto"
                   className="w-[94px] h-auto object-contain"
                 />
-              </Link>
+              </a>
             </div>
 
             {/* RIGHT */}
 
             <div className="flex items-center space-x-4">
-              <Link href="/auth/signin">
+              <a href="/auth/signin">
                 <Button variant="outline">
                   Masuk
                 </Button>
-              </Link>
+              </a>
 
-              <Link href="/auth/code-register">
+              <a href="/auth/code-register">
                 <Button variant="default">
                   Daftar Sekarang
                 </Button>
-              </Link>
+              </a>
             </div>
           </nav>
         </div>

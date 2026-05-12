@@ -5,7 +5,6 @@ import NonAuthLayout from "../../layouts/nonAuth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { validatePhoneNumber } from "@/lib/form-validation";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -216,11 +215,11 @@ const RegisteredCode = () => {
             <div className="forgot-password text-sm">
               <span>Sudah memiliki akun? </span>
 
-              <Link href="/auth/signin">
+              <a href="/auth/signin">
                 <span className="text-blue-600 font-bold cursor-pointer">
                   Login
                 </span>
-              </Link>
+              </a>
             </div>
 
             <div className="flex justify-end mt-5">

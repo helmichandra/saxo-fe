@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
-import Link from "next/link";
 
 import AdminAuth from "@/app/layouts/adminAuth";
 
@@ -392,13 +391,14 @@ const CoinDetailPage = () => {
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem className="text-xs">
-                    <Link
+                    <a
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      className="text-blue-500 underline break-all"
                     >
                       {url}
-                    </Link>
+                    </a>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -4,7 +4,6 @@ import React, { SyntheticEvent, useState } from "react";
 
 import NonAuthLayout from "../../layouts/nonAuth";
 
-import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { Input } from "@/components/ui/input";
@@ -240,9 +239,9 @@ const SignInPage = () => {
                 variant="outline"
                 className="text-blue-600"
               >
-                <Link href="/auth/code-register">
+                <a href="/auth/code-register">
                   Daftar Sekarang
-                </Link>
+                </a>
               </Button>
 
               <Button

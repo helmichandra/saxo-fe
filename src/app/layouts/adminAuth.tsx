@@ -11,7 +11,6 @@ import React, {
 
 import { Button } from "@/components/ui/button";
 
-import Link from "next/link";
 
 import { useRouter } from "next/router";
 
@@ -88,7 +87,7 @@ const AdminAuth = ({
 
               {/* LOGO */}
 
-              <Link
+              <a
                 href="/"
                 className="cursor-pointer hidden md:block"
               >
@@ -97,80 +96,80 @@ const AdminAuth = ({
                   alt="Saxo Crypto"
                   className="w-[94px] h-auto object-contain"
                 />
-              </Link>
+              </a>
 
               {currentRoleId === "1" && (
                 <div className="ps-0 md:ps-7">
-                  <Link
+                  <a
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/markets"
                   >
                     Market
-                  </Link>
+                  </a>
                 </div>
               )}
 
               {currentRoleId === "1" && (
                 <div className="ps-0 md:ps-7">
-                  <Link
+                  <a
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/transactions"
                   >
                     Transaksi
-                  </Link>
+                  </a>
                 </div>
               )}
 
               {currentRoleId === "1" && (
                 <div className="ps-0 md:ps-7">
-                  <Link
+                  <a
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/portofolios"
                   >
                     Portofolio
-                  </Link>
+                  </a>
                 </div>
               )}
 
               <div className="ps-0 md:ps-7">
-                <Link
+                <a
                   className="text-gray-700 hover:text-blue-500"
                   href="/dashboard/requests"
                 >
                   Permintaan
-                </Link>
+                </a>
               </div>
 
               <div className="ps-0 md:ps-7">
-                <Link
+                <a
                   className="text-gray-700 hover:text-blue-500"
                   href="/dashboard/banks"
                 >
                   Bank
-                </Link>
+                </a>
               </div>
 
               {(currentRoleId === "777" ||
                 currentRoleId === "555") && (
                 <div className="ps-0 md:ps-7">
-                  <Link
+                  <a
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/wallets"
                   >
                     Dompet User
-                  </Link>
+                  </a>
                 </div>
               )}
 
               {(currentRoleId === "777" ||
                 currentRoleId === "555") && (
                 <div className="ps-0 md:ps-7">
-                  <Link
+                  <a
                     className="text-gray-700 hover:text-blue-500"
                     href="/dashboard/users"
                   >
                     Pengguna
-                  </Link>
+                  </a>
                 </div>
               )}
             </div>
@@ -186,14 +185,14 @@ const AdminAuth = ({
                 </div>
               </div>
 
-              <Link href="/auth/signin">
+              <a href="/auth/signin">
                 <Button
                   onClick={logout}
                   variant="default"
                 >
                   Keluar
                 </Button>
-              </Link>
+              </a>
             </div>
           </nav>
         </div>

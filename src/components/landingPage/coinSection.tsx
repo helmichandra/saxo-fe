@@ -1,6 +1,5 @@
 import React from "react";
 import CoinSmallList from "./coinSmallList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 
 const CoinSection = () => {
@@ -19,12 +18,12 @@ const CoinSection = () => {
           Daftar untuk mulai trading sekarang!
         </span>
         <div className="flex items-center space-x-4">
-          <Link href="/auth/signin">
+          <a href="/auth/signin">
             <Button variant="outline">Masuk</Button>
-          </Link>
-          <Link href="/auth/code-register">
+          </a>
+          <a href="/auth/code-register">
             <Button variant="default">Daftar Sekarang</Button>
-          </Link>
+          </a>
         </div>
       </div>
     </div>

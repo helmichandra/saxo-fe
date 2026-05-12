@@ -1,4 +1,3 @@
-import Link from "next/link";
 
 import React from "react";
 
@@ -15,17 +14,17 @@ const CtaSection = () => {
         </h2>
 
         <div className="flex items-center space-x-4">
-          <Link href="/auth/signin">
+          <a href="/auth/signin">
             <Button variant="default">
               Masuk
             </Button>
-          </Link>
+          </a>
 
-          <Link href="/auth/code-register">
+          <a href="/auth/code-register">
             <Button variant="outline">
               Daftar Sekarang
             </Button>
-          </Link>
+          </a>
         </div>
       </div>
 

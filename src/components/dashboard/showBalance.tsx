@@ -1,7 +1,6 @@
 "use client";
 import { logout } from "@/lib/auth";
 import { sessionId } from "@/lib/getSession";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 const ShowBalance = () => {
@@ -59,7 +58,7 @@ const ShowBalance = () => {
       <div className="py-[24px] px-[22px] bg-[#0F172A] rounded-xl">
         <div className="text-white flex justify-between">
           <div className="font-bold text-md">Saldo Deposit (Fiat)</div>
-          <Link href="#" className="text-sm flex items-center gap-1">
+          <a href="#" className="text-sm flex items-center gap-1">
             Lihat Transaksi
             <span>
               <svg
@@ -75,7 +74,7 @@ const ShowBalance = () => {
                 />
               </svg>
             </span>
-          </Link>
+          </a>
         </div>
         <div className="py-3">
           <span className="text-2xl font-bold text-white">

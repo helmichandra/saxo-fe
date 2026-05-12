@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { CryptoWallet } from "@/models/Interface";
 import { sessionId } from "@/lib/getSession";
 import { logout } from "@/lib/auth";
@@ -50,7 +49,7 @@ const UserPorto = () => {
       <div className="py-[24px] px-[22px] bg-[#0F172A] rounded-xl">
         <div className="text-white flex justify-between">
           <div className="font-bold text-md">Portofolio Saya</div>
-          <Link href="/dashboard/portofolios" className="text-sm flex items-center gap-1">
+          <a href="/dashboard/portofolios" className="text-sm flex items-center gap-1">
             Lebih Lanjut
             <span>
               <svg
@@ -66,7 +65,7 @@ const UserPorto = () => {
                 />
               </svg>
             </span>
-          </Link>
+          </a>
         </div>
         <div className="py-3">
           {portos.length > 0 ? (
