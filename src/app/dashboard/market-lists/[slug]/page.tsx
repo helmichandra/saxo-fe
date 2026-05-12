@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
-import Image from "next/image";
-
 import {
   TrendingDown,
   TrendingUp,
@@ -251,12 +249,10 @@ const CoinDetailPage = () => {
         <div className="max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-              <Image
+              <img
                 src={crypto.logoUrl}
                 alt={crypto.name}
-                width={48}
-                height={48}
-                className="rounded-full flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12"
+                className="rounded-full flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 object-cover"
               />
 
               <div className="min-w-0 flex-1">
